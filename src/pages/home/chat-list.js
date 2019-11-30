@@ -3,7 +3,7 @@ import PropTypes from "prop-types";
 import { List, Avatar } from "antd";
 import { isImmutable } from "immutable";
 
-function ChatList({ friends, groups, user, switchChat, currentChat, chats }) {
+function ChatList({ friends, user, switchChat, currentChat, chats }) {
   const triggerSwitchChat = name => () => {
     switchChat(user, name);
   };
@@ -20,7 +20,9 @@ function ChatList({ friends, groups, user, switchChat, currentChat, chats }) {
     return (
       <List.Item
         onClick={triggerSwitchChat(item)}
-        className={`${currentChat.includes(item) ? "active" : ""}`}
+        className={`chat-list-item ${
+          currentChat.includes(item) ? "active" : ""
+        }`}
       >
         <Avatar icon="user" style={{ marginRight: "5px" }} />
         {item}
@@ -28,7 +30,7 @@ function ChatList({ friends, groups, user, switchChat, currentChat, chats }) {
       </List.Item>
     );
   };
-  const listData = friends.concat(groups).toJS();
+  const listData = friends.toJS();
 
   return (
     <div className="chat-list">
@@ -39,7 +41,6 @@ function ChatList({ friends, groups, user, switchChat, currentChat, chats }) {
 
 ChatList.propTypes = {
   friends: PropTypes.object.isRequired,
-  groups: PropTypes.object.isRequired,
   user: PropTypes.string.isRequired,
   currentChat: PropTypes.string.isRequired,
   switchChat: PropTypes.func.isRequired,

@@ -20,6 +20,7 @@ import "./index.less";
 import { Map } from "immutable";
 
 const { user } = getUrlParamObj();
+
 const bc = new BroadcastChannel("chat-demo");
 class Home extends React.Component {
   static propTypes = {
@@ -44,7 +45,6 @@ class Home extends React.Component {
     const { rootData, actions } = this.props;
     const data = rootData.get(user) || Map();
     const friends = data.get("friends");
-    const groups = data.get("groups");
     const currentChat = data.get("currentChat");
     const chatContent = rootData.getIn(["chats", currentChat]);
     const chats = rootData.get("chats");
@@ -62,7 +62,6 @@ class Home extends React.Component {
       <div className="home">
         <ChatList
           friends={friends}
-          groups={groups}
           user={user}
           switchChat={switchChat}
           currentChat={currentChat}
@@ -81,6 +80,7 @@ class Home extends React.Component {
             switchChat={switchChat}
             groupNum={groupNum}
             broadcast={this.broadcast}
+            moveChatToTop={moveChatToTop}
           />
           <ChatInput
             user={user}

@@ -1,5 +1,5 @@
 // [ducks-modular-redux](https://github.com/erikras/ducks-modular-redux)
-import { fromJS, List, Map, Set } from "immutable";
+import { fromJS, List, Map } from "immutable";
 import typeToReducer from "type-to-reducer";
 
 // Actions
@@ -15,35 +15,35 @@ const MOVE_CHAT_TO_TOP = "move_chat_to_top";
 // Action Creators
 export const createUser = user => ({
   type: CREATE_USER,
-  payload: { user }
+  meta: { user }
 });
-export const sendMsg = (from, currentChat, msg) => ({
+export const sendMsg = (from, currentChat, msg, img) => ({
   type: SEND_MSG,
-  payload: { from, currentChat, msg }
+  meta: { from, currentChat, msg, img }
 });
 export const retractMsg = (from, currentChat, msgIdx) => ({
   type: RETRACT_MSG,
-  payload: { from, currentChat, msgIdx }
+  meta: { from, currentChat, msgIdx }
 });
 export const switchChat = (user, chat) => ({
   type: SWITCH_CHAT,
-  payload: { user, chat }
+  meta: { user, chat }
 });
 export const createGroup = (inviter, invitee) => ({
   type: CREATE_GROUP,
-  payload: { inviter, invitee }
+  meta: { inviter, invitee }
 });
 export const inviteToGroup = (inviter, invitees, group) => ({
   type: INVITE_TO_GROUP,
-  payload: { inviter, invitees, group }
+  meta: { inviter, invitees, group }
 });
 export const syncState = newState => ({
   type: SYNC_STATE,
-  payload: { newState }
+  meta: { newState }
 });
 export const moveChatToTop = (user, currentChat) => ({
   type: MOVE_CHAT_TO_TOP,
-  payload: { user, currentChat }
+  meta: { user, currentChat }
 });
 
 const initialState = {
@@ -53,30 +53,25 @@ const initialState = {
   // TODO we can use graph to store friendship
   user1: {
     friends: ["user2", "user3", "user4", "user5", "group1"],
-    groups: [],
     currentChat: "user1-user2"
   },
   user2: {
     friends: ["user1", "user3", "user4", "user5", "group1"],
-    groups: [],
     currentChat: "user1-user2"
   },
   user3: {
     friends: ["user1", "user2", "user4", "user5"],
-    groups: [],
     currentChat: ""
   },
   user4: {
     friends: ["user1", "user2", "user3", "user5"],
-    groups: [],
     currentChat: ""
   },
   user5: {
     friends: ["user1", "user2", "user3", "user4"],
-    groups: [],
     currentChat: ""
   },
-  group1: Set(["user1", "user2"]),
+  group1: ["user1", "user2"],
   chats: {
     "user1-user2": [
       { name: "user1", msg: "hello, i am user1" },
@@ -94,15 +89,14 @@ const initialState = {
 export default typeToReducer(
   {
     [SEND_MSG]: (state, action) => {
-      const { from, currentChat, msg } = action.payload;
-      // 如果是新的对话，要确保会自动建立
+      const { from, currentChat, msg, img } = action.meta;
       const newState = state.updateIn(["chats", currentChat], (li = List()) =>
-        li.push(Map({ name: from, msg }))
+        li.push(Map({ name: from, msg, img }))
       );
       return newState;
     },
     [SWITCH_CHAT]: (state, action) => {
-      const { user, chat } = action.payload;
+      const { user, chat } = action.meta;
       // 如果不是群聊，需要拼装两个用户的key
       const isGroup = chat.includes("group");
       let chatKey = chat;
@@ -117,7 +111,7 @@ export default typeToReducer(
       return newState.setIn([user, "currentChat"], chatKey);
     },
     [CREATE_GROUP]: (state, action) => {
-      const { inviter, invitee } = action.payload;
+      const { inviter, invitee } = action.meta;
       const newGroup = `group${state.get("groupNum") + 1}`;
       return state
         .updateIn(["groupNum"], num => {
@@ -134,10 +128,10 @@ export default typeToReducer(
             }
           ])
         )
-        .set(newGroup, Set([inviter, invitee]));
+        .set(newGroup, List([inviter, invitee]));
     },
     [INVITE_TO_GROUP]: (state, action) => {
-      const { inviter, invitees, group } = action.payload;
+      const { inviter, invitees, group } = action.meta;
       let newState = state;
       invitees.forEach(invitee => {
         newState = newState.updateIn([invitee, "friends"], (list = List()) =>
@@ -145,7 +139,7 @@ export default typeToReducer(
         );
       });
       return newState
-        .update(group, set => set.concat(invitees))
+        .update(group, list => list.concat(invitees))
         .updateIn(["chats", group], list =>
           list.push(
             Map({
@@ -156,7 +150,7 @@ export default typeToReducer(
         );
     },
     [RETRACT_MSG]: (state, action) => {
-      const { from, currentChat, msgIdx } = action.payload;
+      const { from, currentChat, msgIdx } = action.meta;
       return state.updateIn(["chats", currentChat], (li = List()) =>
         li.splice(
           msgIdx,
@@ -166,11 +160,11 @@ export default typeToReducer(
       );
     },
     [SYNC_STATE]: (state, action) => {
-      const { newState } = action.payload;
+      const { newState } = action.meta;
       return fromJS(newState);
     },
     [MOVE_CHAT_TO_TOP]: (state, action) => {
-      const { user, currentChat } = action.payload;
+      const { user, currentChat } = action.meta;
       // 将当前对话置顶，如果是群聊，需要群体置顶
       let newState = state;
       let friend = null;

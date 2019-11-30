@@ -6,7 +6,7 @@ export default function CoreRouter() {
   return (
     <Switch>
       <Route component={Home} path="/home" />
-      <Redirect to="/home" />
+      <Redirect to="/home?user=user1" />
     </Switch>
   );
 }

@@ -1,6 +1,7 @@
 import React from "react";
 import PropTypes from "prop-types";
 import { Modal, Checkbox, Card, Button } from "antd";
+import { Set } from "immutable";
 
 class ChatContent extends React.Component {
   static propTypes = {
@@ -14,16 +15,21 @@ class ChatContent extends React.Component {
     inviteToGroup: PropTypes.func.isRequired,
     groupMember: PropTypes.object,
     groupNum: PropTypes.number.isRequired,
-    broadcast: PropTypes.func.isRequired
+    broadcast: PropTypes.func.isRequired,
+    moveChatToTop: PropTypes.func.isRequired
   };
   state = { showFriendsModal: false, friendsWillBeInvited: [] };
   // 创建每一条消息单体，用 className 区分样式，包括系统消息、我发的消息、别人发的消息
-  createMsgRow = ({ name, msg, key }) => {
+  createMsgRow = ({ name, msg, img, key }) => {
     const { retractMsg, currentChat, user, broadcast } = this.props;
     const msgType = {
       root: "root-msg",
       [user]: "my-msg"
     };
+    let rowContent = msg;
+    if (img) {
+      rowContent = <img src={img} alt="" className="chat-img" />;
+    }
     return (
       <div
         className={`msg-row ${msgType[name] || "other-msg"}`}
@@ -41,7 +47,7 @@ class ChatContent extends React.Component {
           }
         }}
       >
-        {name === user ? "me" : name}: {msg}
+        {name === user ? "me" : name}: {rowContent}
       </div>
     );
   };
@@ -50,8 +56,9 @@ class ChatContent extends React.Component {
     const { friends, currentChat, groupMember } = this.props;
     const isGroup = currentChat.includes("group");
     if (isGroup) {
+      const groupMemberSet = new Set(groupMember);
       const friendsNotInCurGroup = friends.toJS().filter(name => {
-        return !name.includes("group") && !groupMember.has(name);
+        return !name.includes("group") && !groupMemberSet.has(name);
       });
       const options = friendsNotInCurGroup.map(f => ({
         label: f,
@@ -78,8 +85,15 @@ class ChatContent extends React.Component {
   // 确认邀请入群
   handleOk = () => {
     const { friendsWillBeInvited } = this.state;
-    const { user, currentChat, inviteToGroup, broadcast } = this.props;
+    const {
+      user,
+      currentChat,
+      inviteToGroup,
+      broadcast,
+      moveChatToTop
+    } = this.props;
     inviteToGroup(user, friendsWillBeInvited, currentChat);
+    moveChatToTop(user, currentChat);
     this.setState({ showFriendsModal: false });
     broadcast();
   };
@@ -128,11 +142,11 @@ class ChatContent extends React.Component {
         <Card
           title={currentChat}
           extra={this.theExtraBtn()}
-          style={{ height: "3rem", overflow: "auto" }}
+          className="the-card"
         >
           {chatContent.toJS().map((obj, key) => {
-            const { name, msg } = obj;
-            return this.createMsgRow({ name, msg, key });
+            const { name, msg, img } = obj;
+            return this.createMsgRow({ name, msg, img, key });
           })}
         </Card>
         {this.createModal()}

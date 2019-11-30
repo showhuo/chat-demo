@@ -1,6 +1,6 @@
 import "babel-polyfill";
-import "./bluebird";
-import "normalize.css";
+// import "./bluebird";
+// import "normalize.css";
 import { throttle } from "lodash";
 
 // rem 自动转换
