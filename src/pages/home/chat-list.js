@@ -26,7 +26,9 @@ function ChatList({ friends, user, switchChat, currentChat, chats }) {
       >
         <Avatar icon="user" style={{ marginRight: "5px" }} />
         {item}
-        <div>{name && `${isGroup ? name + ": " : ""}${msg}`}</div>
+        <div className="last-msg">
+          {name && `${isGroup ? name + ": " : ""}${msg}`}
+        </div>
       </List.Item>
     );
   };
