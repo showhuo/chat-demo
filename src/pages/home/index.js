@@ -17,7 +17,7 @@ import ChatContent from "./chat-content";
 import ChatList from "./chat-list";
 import ChatInput from "./chat-input";
 import "./index.less";
-import { Map } from "immutable";
+import { Map, Set } from "immutable";
 
 const { user } = getUrlParamObj();
 
@@ -44,7 +44,7 @@ class Home extends React.Component {
   render() {
     const { rootData, actions } = this.props;
     const data = rootData.get(user) || Map();
-    const friends = data.get("friends");
+    const friends = data.get("friends") || Set();
     const currentChat = data.get("currentChat");
     const chatContent = rootData.getIn(["chats", currentChat]);
     const chats = rootData.get("chats");
