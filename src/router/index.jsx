@@ -1,12 +1,12 @@
 import React from "react";
-import { Route, Switch, Redirect } from "react-router-dom";
+import { Route, Switch } from "react-router-dom";
 import Home from "../pages/home";
 
 export default function CoreRouter() {
   return (
     <Switch>
-      <Route component={Home} path="/home" />
-      <Redirect to="/home?user=user1" />
+      <Route component={Home} path="/" />
+      {/* <Redirect to="/" /> */}
     </Switch>
   );
 }
